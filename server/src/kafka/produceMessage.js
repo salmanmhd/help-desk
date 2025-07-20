@@ -1,12 +1,16 @@
-import { producer } from "./index";
+import { connectKafka, producer } from "./index.js";
 
-const produceMessage = async (topic, messages) => {
+const produceMessage = async (topic, key, messages) => {
   try {
-    const formattedMessages = Array.isArray(messages) ? messages : [messages];
-
+    await connectKafka();
     await producer.send({
       topic,
-      messages: formattedMessages,
+      messages: [
+        {
+          key: key,
+          value: JSON.stringify(messages),
+        },
+      ],
     });
 
     console.log(`✅ Message sent to topic "${topic}"`);

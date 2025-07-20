@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { io } from "socket.io-client";
 import {
   User,
   MessageSquare,
@@ -7,6 +8,10 @@ import {
   XCircle,
   Send,
 } from "lucide-react";
+
+const socket = io("http://localhost:4000", {
+  autoConnect: false,
+});
 
 // Login Screen Component
 const LoginScreen = ({ agentUsername, setAgentUsername, setCurrentScreen }) => {
@@ -199,6 +204,18 @@ const ChatScreen = ({
   handleEndChat,
   messagesEndRef,
 }) => {
+  useEffect(() => {
+    socket.connect();
+
+    socket.on("connection", () => {
+      console.log(`user connected: `, socket.id);
+    });
+
+    return () => {
+      socket.off("connection");
+    };
+  }, []);
+
   return (
     <div className="flex min-h-screen flex-col bg-gray-50">
       <header className="border-b bg-white shadow-sm">
@@ -281,13 +298,6 @@ const AgentChatbot = () => {
       message: "Having trouble with payment processing",
       timestamp: "5 minutes ago",
       avatar: "👩",
-    },
-    {
-      id: 3,
-      username: "mike_johnson",
-      message: "Need assistance with order tracking",
-      timestamp: "8 minutes ago",
-      avatar: "👱‍♂️",
     },
   ]);
 

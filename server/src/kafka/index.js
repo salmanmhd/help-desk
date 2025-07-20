@@ -1,7 +1,7 @@
 import { Kafka } from "kafkajs";
 
 const kafka = new Kafka({
-  clientId: "wallet-service",
+  clientId: "help-desk",
   brokers: [process.env.KAFKA_BROKER || "localhost:9092"],
 });
 

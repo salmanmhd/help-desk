@@ -1,5 +1,9 @@
-import { asyncHandler } from "../utils/asyncHandler.js";
 import axios from "axios";
+import { produceMessage } from "../kafka/produceMessage.js";
+import { ApiResponse } from "../utils/apiResponse.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
+import { validateFields } from "../utils/validateRequiredFields.js";
+import { ErrorResponse } from "../utils/errorResponse.js";
 
 const QDRANT_URL = process.env.QDRANT_URL;
 const COLLECTION_NAME = process.env.COLLECTION_NAME;
@@ -50,14 +54,25 @@ const ragController = asyncHandler(async (req, res) => {
   }
 });
 
-const socketController = asyncHandler(async (req, res) => {
-  // import "./controllers/socket.controller.js";
-});
-
 const agentController = asyncHandler(async (req, res) => {
-  console.log(
-    "send a kafka event with deatils like user id, or whatever is required"
-  );
+  const { ticketId, userId, issue, roomId } = req.body;
+  // const
+  const requiredFields = { ticketId, userId, issue, roomId };
+  const missingFields = validateFields(requiredFields);
+  console.log(`missing fields:`, missingFields);
+  if (missingFields.length > 0) {
+    res.status(400).json(
+      new ErrorResponse(400, {
+        code: "",
+        message: `Missing required fiels: ${missingFields.join(", ")}`,
+      })
+    );
+
+    return;
+  }
+
+  produceMessage("request.agent", userId, req.body);
+  res.status(200).json({ message: "Message sent successfully" });
 });
 
-export { ragController };
+export { ragController, agentController };

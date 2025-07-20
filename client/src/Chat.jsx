@@ -85,7 +85,7 @@ const Message = ({
                 : "border border-gray-200 bg-gray-50 text-gray-900"
             } hover:shadow-md`}
           >
-            <p className="whitespace-pre-wrap text-sm leading-relaxed">
+            <div className="whitespace-pre-wrap text-sm leading-relaxed">
               {isTyping ? (
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1">
@@ -104,7 +104,7 @@ const Message = ({
               ) : (
                 message.content
               )}
-            </p>
+            </div>
           </div>
 
           {message.role === "bot" && !isTyping && (
@@ -180,14 +180,18 @@ const Header = ({ user, isConnected, handleSocket }) => {
         </div>
       </div>
       <button
+        disabled={isConnected}
         onClick={handleSocket}
-        className="rounded-full bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        className={`rounded-full px-4 py-2 text-sm font-medium text-white ${isConnected ? "bg-gray-600" : "bg-blue-600 hover:bg-blue-700 hover:font-bold"}`}
       >
-        Connect with us
+        {isConnected ? "Connected" : "Connect with us"}
       </button>
       <div className="flex items-center gap-2">
         <div>{isConnected ? `Online: ${user}` : "Offline"}</div>
-        <button className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900">
+        <button
+          disabled
+          className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900"
+        >
           <Settings size={16} />
         </button>
         <button className="rounded-md p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-900">
@@ -236,8 +240,17 @@ export default function ChatBot() {
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
-    setIsLoading(true);
 
+    //send msg
+    if (isConnected) {
+      console.log("hi there");
+    } else {
+      sendApiRequest();
+    }
+  };
+
+  async function sendApiRequest() {
+    setIsLoading(true);
     try {
       const response = await fetch("http://localhost:4000/api/v1/ask", {
         method: "POST",
@@ -279,7 +292,9 @@ export default function ChatBot() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }
+
+  function sendSocketMessage() {}
 
   const copyToClipboard = (text, messageId) => {
     navigator.clipboard.writeText(text);
