@@ -11,10 +11,14 @@ import {
   ThumbsDown,
   Check,
 } from "lucide-react";
+import { createRoutesFromChildren, useParams } from "react-router-dom";
+import axios from "axios";
 
 const socket = io("http://localhost:4000", {
   autoConnect: false,
 });
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // Avatar Component
 const Avatar = ({ role, size = "md" }) => {
@@ -219,6 +223,8 @@ export default function ChatBot() {
   const messagesEndRef = useRef(null);
   const [isConnected, setIsConnected] = useState(false);
   const [user, setUser] = useState("");
+  const { email } = useParams();
+  console.log(`⭕email: `, email);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -243,7 +249,7 @@ export default function ChatBot() {
 
     //send msg
     if (isConnected) {
-      console.log("hi there");
+      handleSocket();
     } else {
       sendApiRequest();
     }
@@ -294,7 +300,19 @@ export default function ChatBot() {
     }
   }
 
-  function sendSocketMessage() {}
+  function sendSocketMessage() {
+    socket.emit("chat", {
+      room: `room-${email}`,
+      message: input,
+      email: email,
+    });
+
+    // setInput
+
+    return () => {
+      socket.off("chat");
+    };
+  }
 
   const copyToClipboard = (text, messageId) => {
     navigator.clipboard.writeText(text);
@@ -302,11 +320,26 @@ export default function ChatBot() {
     setTimeout(() => setCopiedMessageId(null), 2000);
   };
 
-  const handleSocket = () => {
+  const handleSocket = async () => {
+    const response = await axios.post(`${BASE_URL}/ask/agent`, {
+      ticketId: "new_ticket",
+      userId: email,
+      issue: "testing the chatbot",
+      roomId: `room-${email}`,
+    });
+
+    if (response.data?.statusCode !== 200) {
+      console.log(response.data?.error?.message);
+      return;
+    }
+
     console.log(`🔻inside: handleSocket`);
     socket.connect();
     socket.on("connect", () => {
       console.log(`client connected: ${socket.id}`);
+
+      socket.emit("login", { email });
+
       setIsConnected(true);
       setUser(socket.id);
       console.log(`🔺isConnected: ${socket.connected}`);

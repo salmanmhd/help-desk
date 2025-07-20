@@ -72,7 +72,7 @@ const agentController = asyncHandler(async (req, res) => {
   }
 
   produceMessage("request.agent", userId, req.body);
-  res.status(200).json({ message: "Message sent successfully" });
+  res.status(200).json(new ApiResponse(200, "request raised", {}));
 });
 
 export { ragController, agentController };

@@ -25,12 +25,17 @@ io.on("connection", (socket) => {
     users[email] = socket.id;
     rooms[email] = room;
     socket.join(room);
-
     if (!messages[room]) messages[room] = [];
 
     socket.emit("room-joined", { room, messages: messages[room] });
 
-    socket.broadcast.to(room).emit("new_user", `${email} joined`);
+    socket.broadcast.to(room).emit(`new_user, ${email} joined`);
+    console.log(`⭕ messages db: `, messages);
+  });
+
+  socket.on("join-room", ({ room, username }) => {
+    socket.join(room);
+    socket.broadcast.to(room).emit(`agent joined chat: ${username}`);
   });
 
   socket.on("chat", ({ room, message, email }) => {
