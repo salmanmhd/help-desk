@@ -4,6 +4,10 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { validateFields } from "../utils/validateRequiredFields.js";
 import { ErrorResponse } from "../utils/errorResponse.js";
+// Inside async function
+await new Promise((resolve) => setTimeout(resolve, 2000));
+
+import { getIo } from "./socket.controller.js";
 
 const QDRANT_URL = process.env.QDRANT_URL;
 const COLLECTION_NAME = process.env.COLLECTION_NAME;
@@ -71,7 +75,10 @@ const agentController = asyncHandler(async (req, res) => {
     return;
   }
 
-  produceMessage("request.agent", userId, req.body);
+  const io = getIo();
+
+  // produceMessage("request.agent", userId, req.body);
+  io.to("tickets").emit("ticket_raised", req.body);
   res.status(200).json(new ApiResponse(200, "request raised", {}));
 });
 

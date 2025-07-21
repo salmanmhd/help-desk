@@ -301,6 +301,27 @@ const AgentChatbot = () => {
     },
   ]);
 
+  console.log(`🔴 currentuser: `, currentUser);
+
+  useEffect(() => {
+    socket.connect();
+
+    socket.on("connection", () => {
+      console.log(`user connected: `, socket.id);
+      socket.emit("join-ticket-room", "username");
+    });
+
+    socket.on("ticket-raised", (data) => {
+      console.log(`⭕ ticket received: `, data);
+    });
+
+    return () => {
+      socket.off("connection");
+    };
+  }, []);
+
+  // useEffect
+
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {

@@ -4,12 +4,12 @@ console.log(process.env.KAFKA_BROKER);
 
 const kafka = new Kafka({
   clientId: "wallet-service",
-  brokers: [process.env.KAFKA_BROKER],
+  brokers: [process.env.KAFKA_BROKER || "localhost:9092"],
 });
 
 const admin = kafka.admin();
 
-const topics = ["wallet.create", "wallet.create.response"];
+const topics = ["request.agent", "request.agent.response"];
 
 async function createTopics() {
   try {
@@ -86,5 +86,5 @@ async function increasePartitionsForTopics(x) {
   await admin.disconnect();
 }
 
-// createTopics();
-increasePartitionsForTopics(5);
+createTopics();
+// increasePartitionsForTopics(5);
